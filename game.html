@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+    <title>My Game!</title>
+</head>
+<body>
+
+	<canvas id="canvas" style="border:1px solid #000"></canvas> 
+
+<script>
+// Use requestAnimationFrame if available, if not fall back on setTimeout()
+(function() {
+    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    window.requestAnimationFrame = requestAnimationFrame;
+})();
+ 
+var canvas = document.getElementById("canvas"),
+    ctx = canvas.getContext("2d"),
+    width = 500,
+    height = 200,
+    player = {
+      x : width/20,
+      y : height - 40,
+      width : 40,
+      height : 40,
+      speed: 3,
+      velX: 0,
+      velY: 0,
+      jumping: false,
+      img: 'taco.png'
+    },
+    obstacle = {
+    	x : width,
+    	y : height - 60,
+    	width : 20,
+    	height : 60,
+    	speed : 3,
+    	velX: 3,
+      	velY: 0,
+      	img: 'palmtree.png'
+    },
+    keys = [],
+    friction = 0.8,
+    gravity = 0.2,
+    taco = new Image,
+    palmtree = new Image;
+
+// Set images
+taco.src = player.img;
+palmtree.src = obstacle.img;
+
+canvas.width = width;
+canvas.height = height;
+ 
+function update(){
+  // check keys
+    if (keys[38] || keys[32]) {
+        // up arrow or space
+      if(!player.jumping){
+       player.jumping = true;
+       player.velY = -player.speed*2;
+      }
+    }
+
+    obstacle.x -= obstacle.velX;
+ 	obstacle.y += obstacle.velY;
+
+    player.velY += gravity;
+    player.x += player.velX;
+    player.y += player.velY;
+ 
+    // if (obstacle.x >= width-obstacle.width) {
+    //     obstacle.x = width-obstacle.width;
+    // } else 
+    if (obstacle.x <= 0) {         
+        obstacle.x = width;
+    }    
+  	
+  	// Stop falling at y = 0
+    if (player.y >= height-player.height) {
+        player.y = height - player.height;
+        player.jumping = false;
+    }
+
+    //console.log("y: " + player.y);
+    //console.log(obstacle.height);
+
+    if ((player.x >= obstacle.x) && (player.x <= (obstacle.x + obstacle.width)) && (player.y >= (height - obstacle.height))) {
+    	console.log("hit!");
+       	window.cancelAnimationFrame(cancelId);
+       	cancelId = undefined;
+       	return;
+    }
+ 
+  ctx.clearRect(0,0,width,height);
+  // Draw obstacle
+  ctx.drawImage(palmtree, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+  // Draw player
+  ctx.drawImage(taco, player.x, player.y, player.width, player.height);
+ 
+  cancelId = requestAnimationFrame(update);
+}
+
+// taco.addEventListener("load", function() {
+//   ctx.drawImage(taco, player.x, player.y, player.width, player.height * (300/player.width));
+// }, false);
+ 
+document.body.addEventListener("keydown", function(e) {
+    keys[e.keyCode] = true;
+    if ((keys[38] || keys[32]) && !cancelId) {
+    	// reset game
+    	obstacle.x = width;
+    	update();
+    }
+});
+ 
+document.body.addEventListener("keyup", function(e) {
+    keys[e.keyCode] = false;
+});
+ 
+window.addEventListener("load",function(){
+    update();
+});
+</script>
+</body>
+</html>
